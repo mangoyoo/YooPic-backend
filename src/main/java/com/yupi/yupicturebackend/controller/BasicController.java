@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.yupi.yupicturebackend.demos.web;
+package com.yupi.yupicturebackend.controller;
 
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.ModelAttribute;
