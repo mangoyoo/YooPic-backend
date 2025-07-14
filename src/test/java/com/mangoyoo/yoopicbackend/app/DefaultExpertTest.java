@@ -9,20 +9,15 @@ import org.springframework.boot.test.context.SpringBootTest;
 import java.util.List;
 import java.util.UUID;
 
-import static org.springframework.test.util.AssertionErrors.assertFalse;
 import static org.springframework.test.util.AssertionErrors.assertNotNull;
 import reactor.core.publisher.Flux;
-import java.time.Duration;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
-import static org.junit.jupiter.api.Assertions.*;
 
 @Slf4j
 @SpringBootTest
-class MyAppTest {
+class DefaultExpertTest {
 
     @Resource
-    private MyApp myApp;
+    private DefaultExpert defaultExpert;
 
     @Test
     void testChat() {
@@ -31,7 +26,7 @@ class MyAppTest {
         String message = "请你帮我解读一下这张照片";
         String image = "http://www.yoodns.yoopic.space/public/1920742554046758914/2025-05-09_cxpM3I3bvbj9ciT8.webp";
 
-        Flux<String> responseFlux = myApp.doChatWithImageByStream(message, image, chatId);
+        Flux<String> responseFlux = defaultExpert.doChatWithImageByStream(message, image, chatId);
 
         // 收集所有响应并打印
         List<String> responses = responseFlux
@@ -51,7 +46,7 @@ class MyAppTest {
         String message = "回答以下问题：1.我现在的地理位置在哪？2.广州塔5公里内有哪些火锅店";
 
 
-        Flux<String> responseFlux = myApp.doChatByStream(message,chatId);
+        Flux<String> responseFlux = defaultExpert.doChatByStream(message,chatId);
 
         // 收集所有响应并打印
         List<String> responses = responseFlux
@@ -72,7 +67,7 @@ class MyAppTest {
         String imageUrl = "http://www.yoodns.yoopic.space/public/1920742554046758914/2025-05-09_cxpM3I3bvbj9ciT8.webp";
 
         // 执行被测试方法
-        String result = myApp.doChatWithImageSync(message, imageUrl, chatId);
+        String result = defaultExpert.doChatWithImageSync(message, imageUrl, chatId);
 
         // 验证结果
         assertNotNull(result, "返回结果不应为空");
@@ -109,7 +104,7 @@ class MyAppTest {
 
     private void testMessage(String message) {
         String chatId = UUID.randomUUID().toString();
-        String answer = myApp.doChatWithTools(message, chatId);
+        String answer = defaultExpert.doChatWithTools(message, chatId);
         Assertions.assertNotNull(answer);
     }
 
@@ -119,7 +114,7 @@ class MyAppTest {
         // 测试地图 MCP
 //        String message = "我的另一半居住在广州大学城，请帮我找到 10 公里内合适的约会地点";
         String message = "回答以下问题：1.广州市附近有哪些有名的徒步打卡点，并且需要相关图片,最终将文案和图片生成精美的排版的html文件返回给我";
-        String answer =  myApp.doChatWithMcp(message, chatId);
+        String answer =  defaultExpert.doChatWithMcp(message, chatId);
         log.info("answer:", answer);
     }
 

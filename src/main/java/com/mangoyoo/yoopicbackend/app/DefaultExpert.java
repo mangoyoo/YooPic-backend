@@ -4,6 +4,7 @@ import com.alibaba.cloud.ai.dashscope.chat.DashScopeChatOptions;
 import com.alibaba.cloud.ai.dashscope.chat.MessageFormat;
 import com.alibaba.cloud.ai.dashscope.common.DashScopeApiConstants;
 import com.mangoyoo.yoopicbackend.advisor.MyLoggerAdvisor;
+import com.mangoyoo.yoopicbackend.service.UserService;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.chat.client.ChatClient;
@@ -24,6 +25,8 @@ import org.springframework.util.MimeTypeUtils;
 import reactor.core.publisher.Flux;
 
 import java.net.URI;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 
@@ -31,9 +34,10 @@ import static org.springframework.ai.chat.memory.ChatMemory.CONVERSATION_ID;
 
 @Component
 @Slf4j
-public class MyApp {
+public class DefaultExpert {
     private ToolCallback[] allTools;
     private final ChatClient chatClient;
+    private List<ToolCallback> totalTools;
     private ToolCallbackProvider toolCallbackProvider;
     private static final String SYSTEM_PROMPT = "扮演深耕恋爱心理领域的专家。开场向用户表明身份，告知用户可倾诉恋爱难题。" +
             "围绕单身、恋爱、已婚三种状态提问：单身状态询问社交圈拓展及追求心仪对象的困扰；" +
@@ -42,7 +46,15 @@ public class MyApp {
 
     private static final String DEFAULT_MULTIMODEL = "qwen-vl-plus";
 
-    public MyApp(ChatModel dashscopeChatModel,ToolCallback[] allTools,ToolCallbackProvider toolCallbackProvider) {
+    public DefaultExpert(ChatModel dashscopeChatModel, ToolCallback[] allTools, ToolCallbackProvider toolCallbackProvider) {
+        this.allTools=allTools;
+        this.toolCallbackProvider=toolCallbackProvider;
+        //  先获取 ToolCallbackProvider 中的工具，然后合并
+        totalTools= new ArrayList<>();
+// 添加 availableTools（假设它是 ToolCallback[] 类型）
+        totalTools.addAll(Arrays.asList(this.allTools));
+// 添加 toolCallbackProvider 提供的工具
+        totalTools.addAll(Arrays.asList(toolCallbackProvider.getToolCallbacks()));
         // 创建聊天内存
         ChatMemory chatMemory = MessageWindowChatMemory.builder()
                 .chatMemoryRepository(new InMemoryChatMemoryRepository())
@@ -71,6 +83,7 @@ public class MyApp {
                         .build())
                 .advisors(spec -> spec.param(CONVERSATION_ID, chatId)
                         .param("topK", 20))
+                .toolCallbacks(totalTools)
                 .call()
                 .chatResponse();
         String content = response.getResult().getOutput().getText();
@@ -140,6 +153,7 @@ public class MyApp {
             ChatResponse response = chatClient
                     .prompt(new Prompt(userMessage,
                             DashScopeChatOptions.builder()
+                                    .withModel("qvq-max-latest")
                                     .withMultiModel(true)
                                     .build()))
                     .advisors(spec -> spec.param(CONVERSATION_ID, chatId)
@@ -257,7 +271,7 @@ public class MyApp {
         }
     }
 
-    // MyApp.java - 新增同步方法
+    // DefaultExpert.java - 新增同步方法
     public String doChatWithImageSync(String message, String imageUrl, String chatId) {
         try {
             log.info("=== MyApp图片同步对话开始 ===");
@@ -283,6 +297,7 @@ public class MyApp {
                     .prompt(prompt)
                     .advisors(spec -> spec.param(CONVERSATION_ID, chatId)
                             .param("topK", 20))
+                    .toolCallbacks(totalTools)
                     .call()
                     .chatResponse();
 
