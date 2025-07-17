@@ -37,7 +37,7 @@ public abstract class BaseAgent {
     private AgentState state = AgentState.IDLE;
 
     // 执行控制
-    private int maxSteps = 10;
+    private int maxSteps = 15;
     private int currentStep = 0;
 
     // LLM
